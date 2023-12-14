@@ -3,7 +3,7 @@ version 41
 __lua__
 function _init()
 	slide = 0
-	max_slides = 2
+	max_slides = 5
 	timer = 0
 	next_slide = false
 	anim ={
@@ -25,7 +25,6 @@ function _init()
 	blues = {12,13,1,0}
 	init_transition()
 	init_slide_0()
-	
 end
 
 function _update()
@@ -37,7 +36,13 @@ function _update()
 	elseif slide == 1 then
 		update_slide_1()
 	elseif slide == 2 then
-		update_slide_2()
+		update_slide_osu()
+	elseif slide == 3 then
+		update_slide_hk()
+	elseif slide == 4 then
+		update_slide_4()
+	elseif slide == 5 then
+		update_slide_end()
 	end
 	if(transition.active) then
 		upd_transition()
@@ -45,7 +50,9 @@ function _update()
 	if(slide > max_slides) then
 		slide = max_slides
 	end
-	update_txt()
+	if(slide != 5) then
+		update_txt()
+	end
 end 
 
 function _draw()
@@ -55,7 +62,13 @@ function _draw()
 	elseif slide == 1 then
 		draw_slide_1()
 	elseif slide == 2 then
-		draw_slide_2()
+		draw_slide_osu()
+	elseif slide == 3 then
+		draw_slide_hk()
+	elseif slide == 4 then
+		draw_slide_4()
+	elseif slide == 5 then
+		draw_slide_end()
 	end
 	if(transition.active)then
 		draw_transition()
@@ -64,15 +77,28 @@ function _draw()
 	//print(shutdown.timer,0,0,0)
 end
 -->8
+--reset
 function go_next_slide()
 		next_slide = false
 		slide += 1
 		timer = time()
 		init_transition()
 		reset_anim()
-		txt.timer = time()
+		reset_text()
+end
+function reset_text()
+	txt.timer = time()
+	txt.show = false
+	txt.clr = 0
+end
+function reset_anim()
+	anim.timer1 = time()
+	anim.spr1 = 0
+	anim.timer2 = time()
+	anim.spr2 = 0
 end
 -->8
+--init
 function init_slide_0()
 		num_pos = { x = 42,y = 48, col = 4}
 		flap_timer = 0
@@ -97,7 +123,7 @@ function init_slide_1()
 		palt(13,true)
 		pal(0,3)
 end
-function init_slide_2()
+function init_slide_hk()
 		knight = {
 			spr1 = 42,
 			x = 40,
@@ -108,6 +134,30 @@ function init_slide_2()
 		palt(13,true)
 		wig_dx = 0
 		txt.delay = 2
+end
+function init_slide_osu()
+	pal()
+	palt(0,false)
+	palt(13,true)
+	txt.delay = 2
+end
+function init_slide_4()
+	pal()
+	palt(0,false)
+	palt(13,true)
+	txt.delay = 2
+end
+function init_slide_end()
+	num_pos = { x = 42,y = 38, col = 4 }
+	flap_timer = 0
+	flap = { 
+		spr1 = 0,
+		 spr2 = 8,
+		timer = 0
+	}
+	sambe = {spr = 128}
+	palt(0,false)
+	palt(13,true)
 end
 function init_transition()
 	rec = {
@@ -131,17 +181,12 @@ function init_transition()
 		ended = false
 	}
 end
-function reset_anim()
-	anim.timer1 = time()
-	anim.spr1 = 0
-	anim.timer2 = time()
-	anim.spr2 = 0
-end
 function lerp(a,b,t)
 	local result=a+t*(b-a)
 	return result
 end
 -->8
+--update
 function update_slide_0()
 	upd_text_move()
 	if(next_slide) then
@@ -153,24 +198,24 @@ function update_slide_1()
 	if(next_slide) then
 		transition.active = true
 		next_slide = false
-		rec.col = 12
+		rec.col = 10
 	end
 	upd_text_move()
 	if transition.ended then
-		init_slide_2()
+		init_slide_osu()
 		go_next_slide()
 	end
 end
 
-function update_slide_2()
+function update_slide_hk()
 	if(next_slide) then
-		transition.started = true
-		next_slide = false
 		rec.col = 4
+		init_slide_hk()
+		go_next_slide()
 	end
 	num_pos.y = lerp(num_pos.y,40,0.08)
 	
-	if time() - anim.timer1 > 0.4 then
+	if time() - anim.timer1 > 0.2 then
 		anim.timer1 = time()
 		if anim.spr1 == 0 then
 			anim.spr1 = 1
@@ -180,14 +225,64 @@ function update_slide_2()
 			wig_dx = 0
 		end	
 	end
-	if(txt.show) then 
-		txt.clr = lerp(txt.clr,4,0.1)
+	upd_card()
+end
+function update_slide_osu()
+	if(next_slide) then
+		rec.col = 4
+		go_next_slide()
+	end
+	num_pos.y = lerp(num_pos.y,40,0.08)
+	
+	if time() - anim.timer1 > 0.2 then
+		anim.timer1 = time()
+		if anim.spr1 == 0 then
+			anim.spr1 = 1
+			wig_dx = 3
+		else
+			anim.spr1 = 0
+			wig_dx = 0
+		end	
 	end
 	upd_card()
+end
+function update_slide_4()
+	if(next_slide) then
+		rec.col = 4
+		go_next_slide()
+		
+		init_slide_end()
+	end
+	num_pos.y = lerp(num_pos.y,40,0.08)
+	
+	if time() - anim.timer1 > 0.2 then
+		anim.timer1 = time()
+		if anim.spr1 == 0 then
+			anim.spr1 = 1
+			wig_dx = 3
+		else
+			anim.spr1 = 0
+			wig_dx = 0
+		end
+	end
+	upd_card()
+end
+function update_slide_end()
+	if(time() - anim.timer1 > 0.2)then
+		anim.timer1 = time()
+		sambe.spr += 2	
+		if(sambe.spr > 134)then
+			sambe.spr = 128
+		end
+	end
+	upd_text_move(24,25)
 end
 function update_txt()
 	if(time() - txt.timer > txt.delay)then
 		txt.show = true
+	end
+	if(txt.show) then 
+		txt.clr = lerp(txt.clr,4,0.1)
 	end
 end
 function upd_transition()
@@ -206,10 +301,14 @@ function shutdown_transition()
 		shutdown_transition = false
 	end
 end
-function upd_text_move()
-	num_pos.y = lerp(num_pos.y,38,0.08)
+function upd_text_move(--[[optional]] text,--[[optional]]colup)
+	text = text or 38
+	colup = colup or true
+	num_pos.y = lerp(num_pos.y,text,0.08)
 	tmpcol = lerp(num_pos.col,0,0.1)
-	pal(ceil(num_pos.col),flr(tmpcol)-1,1)
+	if colup == true then
+		pal(ceil(num_pos.col),flr(tmpcol)-1,1)
+	end
 	num_pos.col = tmpcol
 end
 
@@ -221,6 +320,7 @@ function upd_card()
 	end
 end
 -->8
+--draw
 function draw_slide_0()
 	rectfill(0,0,128,128,11)
 	draw_bands(80,0)
@@ -234,7 +334,8 @@ function draw_slide_0()
 	spr(2+4,num_pos.x+6*7,num_pos.y,2,3)//x
 	//wrapped
 	spr(8,num_pos.x-16,num_pos.y+21,4,2)//wra
-	spr(12,num_pos.x+16,num_pos.y+21,3,3)//pp
+	spr(12,num_pos.x+16,num_pos.y+21,2,3)//pp
+	spr(14,num_pos.x+32,num_pos.y+21,1,2)//half p
 	spr(15,num_pos.x+40,num_pos.y+21,2,2)//e
 	spr(12,num_pos.x+48,num_pos.y+17,1.4,3,true,true)//d
 	print("amigue invisible edition",19,num_pos.y+48,0)
@@ -247,7 +348,7 @@ function draw_slide_1()
 	print("hola! bienvenide a tu" ,22,num_pos.y+13,3)
 	print("amigue invisible wrapped 202x!",6,num_pos.y + 25,3)
 end
-function draw_slide_2()
+function draw_slide_hk()
 	rectfill(0,0,128,128,12)
 	draw_bands(80,0)
 	draw_bands(110,84,-1)
@@ -267,12 +368,69 @@ function draw_slide_2()
 		spr(57,72,num_pos.y+66) // clown emoji
 	end
 end
+function draw_slide_osu()
+	rectfill(0,0,128,128,10)
+	//wrapped
+	draw_polygons({14,0})
+	//draw_card(2)
+	local x = (128-card.w)/2 + card.dx
+	local y = (128-card.h)/2 + card.dy +14
+	local scale = (card.w/card.max_w)
+	draw_card_poly(x,y,{13,0,13})
+	sspr(14*8,16,16,16,x+11,y+10,card.w/1.5,card.h/1.5)//knight
+	if(txt.show) then 
+		print(" juegas a osu!",35,num_pos.y+48,blues[ceil(txt.clr)])
+		print(" yo tambien!",39,num_pos.y+58,blues[ceil(txt.clr)])
+		print("nos gusta sufrir jeje  ",22,num_pos.y+68,blues[ceil(txt.clr)])
+	end
+end
+function draw_slide_4()
+	rectfill(0,0,128,128,11)
+	//wrapped
+	//draw_card(14)
+	draw_polygons({10,0})
+	local x = (128-card.w)/2 + card.dx
+	local y = (128-card.h)/2 + card.dy +14
+	local scale = (card.w/card.max_w)
+	draw_card_poly(x,y,{10,0,14})
+	sspr(0,32,32,32,x+11,y+10,card.w/1.5,card.h/1.5)//knight
+	if(txt.show) then 
+		print("probe kity builder",29,num_pos.y+48,blues[ceil(txt.clr)])
+		print("en el idd y",43,num_pos.y+58,blues[ceil(txt.clr)])
+		print("me gusta mucho jeje",27,num_pos.y+68,blues[ceil(txt.clr)])
+	end
+end
+function draw_slide_end()
+	rectfill(0,0,128,128,0)
+	draw_bands(110,84,-1)
+	draw_bands(-2,-4,1)
+	//wrapped
+	print("en fin, me ha resultado " ,22,num_pos.y+13,7)
+	print("super guay ver que coincidimos ",5,num_pos.y + 25,7)
+	print("en tantos gustos y me pareces",7,num_pos.y + 37,7)
+	print("una persona super chula. ",18,num_pos.y + 49,7)
+	print("que tengas un feliz 2024!",14,num_pos.y + 61,7)
+	
+	spr(sambe.spr,56,106,2,2)
+end
 function draw_transition()
 	for i =0,9 do
 		rectfill(16*i+rec.x,16*i+rec.y,rec.x+rec.w,rec.y+rec.h,rec.col)
 	end
 end
-
+function draw_polygons(color_scheme)
+	render_poly({-30,-10,50,2,40,16,10,30},color_scheme[1])
+	render_poly({-40,-10,30,12,2,10,10,40},color_scheme[2])
+	local newy = 110
+	local newx = 100
+	render_poly({20+newx,-30+newy,50+newx,2+newy,40+newx,16+newy,10+newx,30+newy},color_scheme[1])
+	render_poly({20+newx,-10+newy,30+newx,12+newy,2+newx,10+newy,10+newx,40+newy},color_scheme[2])
+end
+function draw_card_poly(x,y,color_scheme)
+	render_poly({x+10,y+15,x+50,y+15,x+60,y+55,x+0,y+55},color_scheme[1])
+	render_poly({x,y+15,x+50,y+25,x+70,y+35,x+16,y+65},color_scheme[2])
+	render_poly({x,y+25,x+50,y+25,x+70,y+45,x+10,y+55},color_scheme[3])
+end
 function draw_bands(pos,yoffset,pallete)
 	yoffset = yoffset or 0
 	pallete = pallete or 0
@@ -306,6 +464,84 @@ function draw_progress_bar()
 		rectfill( 5*(i+1) +size*i,3,5*i +size*i+size,5,clr)
 	end
 end
+-->8
+--utils
+-- draws a filled convex polygon
+-- v is an array of vertices
+-- {x1, y1, x2, y2} etc
+function render_poly(v,col)
+	col=col or 5
+   
+	-- initialize scan extents
+	-- with ludicrous values
+	local x1,x2={},{}
+	for y=0,127 do
+	 x1[y],x2[y]=128,-1
+	end
+	local y1,y2=128,-1
+   
+	-- scan convert each pair
+	-- of vertices
+	for i=1, #v/2 do
+	 local next=i+1
+	 if (next>#v/2) next=1
+   
+	 -- alias verts from array
+	 local vx1=flr(v[i*2-1])
+	 local vy1=flr(v[i*2])
+	 local vx2=flr(v[next*2-1])
+	 local vy2=flr(v[next*2])
+   
+	 if vy1>vy2 then
+	  -- swap verts
+	  local tempx,tempy=vx1,vy1
+	  vx1,vy1=vx2,vy2
+	  vx2,vy2=tempx,tempy
+	 end 
+   
+	 -- skip horizontal edges and
+	 -- offscreen polys
+	 if vy1~=vy2 and vy1<128 and
+	  vy2>=0 then
+   
+	  -- clip edge to screen bounds
+	  if vy1<0 then
+	   vx1=(0-vy1)*(vx2-vx1)/(vy2-vy1)+vx1
+	   vy1=0
+	  end
+	  if vy2>127 then
+	   vx2=(127-vy1)*(vx2-vx1)/(vy2-vy1)+vx1
+	   vy2=127
+	  end
+   
+	  -- iterate horizontal scans
+	  for y=vy1,vy2 do
+	   if (y<y1) y1=y
+	   if (y>y2) y2=y
+   
+	   -- calculate the x coord for
+	   -- this y coord using math!
+	   x=(y-vy1)*(vx2-vx1)/(vy2-vy1)+vx1
+   
+	   if (x<x1[y]) x1[y]=x
+	   if (x>x2[y]) x2[y]=x
+	  end 
+	 end
+	end
+   
+	-- render scans
+	for y=y1,y2 do
+	 local sx1=flr(max(0,x1[y]))
+	 local sx2=flr(min(127,x2[y]))
+   
+	 local c=col*16+col
+	 local ofs1=flr((sx1+1)/2)
+	 local ofs2=flr((sx2+1)/2)
+	 memset(0x6000+(y*64)+ofs1,c,ofs2-ofs1)
+	 pset(sx1,y,c)
+	 pset(sx2,y,c)
+	end 
+   end
 __gfx__
 00000000bbbbbbbbdddddddddddddddddddddddddddddddddddddddddddddddd000ddd0000ddd000dddddddddddddddddddddddddddddddddddddddddddddddd
 00000000bbbbbbbbdddddddddddddddddddddddddddddddddddddddddddddddd000ddd0000ddd000dddddddddddddddddddddddddddddddddddddddddddddddd
@@ -323,54 +559,70 @@ dee888ccee88cccdd0000ddddd00000dd0000dddddd0000ddddd00000000dddddd00000dd00000dd
 ee888ccce888ccddddddddddd000000dd0000dddddd0000ddddd00000000ddddddd000dddd000ddd000ddddd000dd0000000000000d00000000000d0000dd000
 e888cccde88cccddddddddd0000000ddd0000dddddd0000ddddd00000000ddddddd000dddd000ddd000ddddd00000000000000000dd0000000000dd000000000
 e88cccddee8cccdddddddd0000000dddd0000dddddd0000dddd0000000000dddddd000dddd000ddd000dddddd0000d00000d0000ddd000d00000dddd0000000d
-ddd8899addd899aaddddd0000000ddddd0000dddddd0000ddd000000000000dddd6dd6ddd8eeabcddd7dd7dddddddddd000dddddddd000dddddddddddddddddd
-ddd8899ad88899aadddd0000000dddddd0000dddddd0000ddd000000000000ddd67dd67d88eaabc2d67dd77dddd7d6dd000dddddddd000dddddddddddddddddd
-dd88899ad88999aaddd0000000ddddddd00000dddd00000dd000000dd000000dd67dd67d8eeabbc2d6dddd7ddd67d77d000dddddddd000dddddddddddddddddd
-dd88999a88999aaddd0000000ddddddddd00000dd00000ddd00000dddd00000dd677d67d8eeabcc2d677777dd66ddd7d000dddddddd000dddddddddddddddddd
-d88999aa8899aaadd00000000000000ddd000000000000ddd00000dddd00000dd677777d88eabc22d600770dd677777d000dddddddd000dddddddddddddddddd
-88999aaa8999aaddd00000000000000dddd0000000000dddd00000dddd00000dd677777dddddddddd600770dd600770d000dddddddd000dddddddddddddddddd
-8999aaad899aaaddd00000000000000ddddd00000000ddddd0000dddddd0000dd600700dddddddddd6cc77cdd600770ddddddddddddddddddddddddddddddddd
-899aaadd889aaaddd00000000000000dddddd000000dddddd0000dddddd0000dd600700ddddd8ddddd5c15ddd6cc77cddddddddddddddddddddddddddddddddd
-ddd77aacddd7aaccdddddddddddddddddddddddddddddddddddddddddddddddddd67777d88777788d151515dddc151cddddddddddddddddddddddddddddddddd
-ddd77aacd777aaccdddddddddddddddddddddddddddddddddddddddddddddddddd26772d8777777815100515d155551ddddddddddddddddddddddddddddddddd
-dd777aacd77aaaccddddddddddddddddddddddddddddddddddddddddddddddddd882228d771771771510055115100551dddddddddddddddddddddddddddddddd
-dd77aaac77aaaccddddddddddddddddddddddddddddddddddddddddddddddddd88288888ee7887ee5100015515100155dddddddddddddddddddddddddddddddd
-d77aaacc77aacccddddddddddddddddddddddddddddddddddddddddddddddddd25588882ee7887ee5100501551100515dddddddddddddddddddddddddddddddd
-77aaaccc7aaaccdddddddddddddddddddddddddddddddddddddddddddddddddd2552222277222277d10dd0d1115d0051dddddddddddddddddddddddddddddddd
-7aaacccd7aacccdddddddddddddddddddddddddddddddddddddddddddddddddd5500d00dd772277ddddddddddddddddddddddddddddddddddddddddddddddddd
+ddd8899addd899aaddddd0000000ddddd0000dddddd0000ddd000000000000dddd6dd6ddd8eeabcddd7dd7dddddddddd000dddddddd000ddddddd777777ddddd
+ddd8899ad88899aadddd0000000dddddd0000dddddd0000ddd000000000000ddd67dd67d88eaabc2d67dd77dddd7d6dd000dddddddd000ddddd77eeeeee77ddd
+dd88899ad88999aaddd0000000ddddddd00000dddd00000dd000000dd000000dd67dd67d8eeabbc2d6dddd7ddd67d77d000dddddddd000dddd7eeeeeeeeee7dd
+dd88999a88999aaddd0000000ddddddddd00000dd00000ddd00000dddd00000dd677d67d8eeabcc2d677777dd66ddd7d000dddddddd000ddd7eeeeeeeeeeee7d
+d88999aa8899aaadd00000000000000ddd000000000000ddd00000dddd00000dd677777d88eabc22d600770dd677777d000dddddddd000ddd7eeeeeeeeeeee7d
+88999aaa8999aaddd00000000000000dddd0000000000dddd00000dddd00000dd677777dddddddddd600770dd600770d000dddddddd000dd7e777e77e7e7e7e7
+8999aaad899aaaddd00000000000000ddddd00000000ddddd0000dddddd0000dd600700dddddddddd6cc77cdd600770ddddddddddddddddd7e7e7e7ee7e7e7e7
+899aaadd889aaaddd00000000000000dddddd000000dddddd0000dddddd0000dd600700ddddd8ddddd5c15ddd6cc77cddddddddddddddddd7e7e7e77e7e7e7e7
+ddd77aacddd7aaccdddddddddddddddddddddddddddddddddddddddddddddddddd67777d88777788d151515dddc151cddddddddddddddddd7e7e7ee7e7e7eee7
+ddd77aacd777aaccdddddddddddddddddddddddddddddddddddddddddddddddddd26772d8777777815100515d155551ddddddddddddddddd7e777e77e777e7e7
+dd777aacd77aaaccddddddddddddddddddddddddddddddddddddddddddddddddd882228d771771771510055115100551ddddddddddddddddd7eeeeeeeeeeee7d
+dd77aaac77aaaccddddddddddddddddddddddddddddddddddddddddddddddddd88288888ee7887ee5100015515100155ddddddddddddddddd7eeeeeeeeeeee7d
+d77aaacc77aacccddddddddddddddddddddddddddddddddddddddddddddddddd25588882ee7887ee5100501551100515dddddddddddddddddd7eeeeeeeeee7dd
+77aaaccc7aaaccdddddddddddddddddddddddddddddddddddddddddddddddddd2552222277222277d10dd0d1115d0051ddddddddddddddddddd77eeeeee77ddd
+7aaacccd7aacccdddddddddddddddddddddddddddddddddddddddddddddddddd5500d00dd772277dddddddddddddddddddddddddddddddddddddd777777ddddd
 7aacccdd77acccdddddddddddddddddddddddddddddddddddddddddddddddddd5dd0d0dddd7777dddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
-0000000000000000dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+dddddd00dddd0000000dddd00dddddddbeeeeeebeeeeeeebeebbbbbbbeeeeeebeeeeeeebb666666bdddddddddddddddddddddddddddddddddddddddddddddddd
+dddddd000000aaaaaaa000000dddddddeeeeeeeeeeeeeeeeeebbbbbbeeeeeeeeeeeeeeee66666666dddd22dddddddddddddddddddddddddddddddddddddddddd
+dddddd0200a9aaaaaaa9a0220dddddddeebbbbeeeebbbbbbeebbbbbbeebbbbbbbbbeebbbbbbbb666dddd22dddddddddddddddddddddddddddddddddddddddddd
+ddddd002200a9aaaaa9a022200ddddddeebbbbeeeebbbbbbeebbbbbbeebbbbbbbbbeebbbbbb6666bdd2222dddddddddddddddddddddddddddddddddddddddddd
+dddd090222009aaaaa900222090ddddd22bbbbbb2222bbbb22bbbbbb22222222bbb22bbbbbddddbbdd2222dddddddddddddddddddddddddddddddddddddddddd
+dddd090222209aaaaa902222090ddddd22bbbb2222bbbbbb22bbbbb2bbbbbbb2bbb22bbbbdddbbbbdddd22dddddddddddddddddddddddddddddddddddddddddd
+ddd0990222209aaaaa902222090ddddd222222222222222b2222222222222222bbb22bbbdddddddddddd22dddddddddddddddddddddddddddddddddddddddddd
+ddd0990221109aaaaa9021120990ddddb222222b2222222222222222b222222bbbb22bbbdddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+ddd0990111aa9aaaaa9a11110990ddddbbbbbb00000bbbbbbbb000bbdddddddddddddddd00000000dddddd8888dddd22ddccdddddddddddddddddddddddddddd
+ddd099911aa99aaaaa99a1119990ddddbbbbb0288820bbbbb000330bdddddddddddddddd00000000dddddd8888dddd22ddccdddddddddddddddddddddddddddd
+d00999999999aaaaaaa99999999900ddbbbb088888820bbb03303030dddddddddddddddd00000000bbdddddd8888222222ccdddddddddddddddddddddddddddd
+d0aaaaaaaaaa9999999aaaaaaaaaa0ddbbb0288882880bbbb002020bdddddddddddddddd00000000bbdddddd8888222222ccdddddddddddddddddddddddddddd
+d0aa999aaaaaaaaaaaaaaaaa999aa0ddbbb0888882280bbbb028820bdddddddddddddddd00000000bbbbddaaaa99999911ccdddddddddddddddddddddddddddd
+d0a999999aaaaaaaaaaaaaa99999a0ddbbb0882999900bbbb082280bdddddddddddddddd00000000bbbbddaaaa99999911ccdddddddddddddddddddddddddddd
+dd0900229999999999999992200900ddbbb0829ffff00bbbbb0880bbdddddddddddddddd00000000ddbbddaaaa99111111ccdddddddddddddddddddddddddddd
+ddd00222222222222222222222000dddbb08822fff020bbbbbb00bbbdddddddddddddddd00000000ddbbddaaaa99111111ccdddddddddddddddddddddddddddd
+dddd022220077222220077222220ddddbb0880112200bbbbdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+dddd022220077222220077222220ddddbb0801ccc110bbbbdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+dddd022220077222220077222220ddddbbb0111cccc10bbbdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+dddd022220011222220011222220ddddbbb01f9cccc0f0bbdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+dddd011220000222220000221110ddddbbbb0f944440f0bbdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+dddd022222222222222222222220ddddbbbb022222200bbbdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+ddddd0211222222222222221120dddddbbbb02200220bbbbdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+dddddd02222222222222222220ddddddbbbb04400440bbbbdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+ddddddd000011111111110000ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+dddddddd0211111111111120dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+ddddddd022222222222222220ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+dddddd02222222999922222220dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+dddddd02222229999992222220dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+ddddd022222229ffff922222220ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+ddddd02210222ffffff22201220ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+ddddd02210222ffffff22201220ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+09000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+09900000000000000090000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+99990099999990000999000000000000009900000000000009000000000000000000000000000000000000000000000000000000000000000000000000000000
+99990999999999000999009999999000099900999999900099900099999990000000000000000000000000000000000000000000000000000000000000000000
+99999999999999909999099999999900999909999999990099990999999999000000000000000000000000000000000000000000000000000000000000000000
+99999990990999999999999099099990999999999999999099999999999999900000000000000000000000000000000000000000000000000000000000000000
+99988999009999999999899900999999999999909909999999998990990999990000000000000000000000000000000000000000000000000000000000000000
+99888889999999999998899999999999999989990099999999988999009999990000000000000000000000000000000000000000000000000000000000000000
+98888888899999999988888999999999999988899999999999888889999999990000000000000000000000000000000000000000000000000000000000000000
+08888888887999909988888889999999999888888999999999888888899999990000000000000000000000000000000000000000000000000000000000000000
+08889929777000000988888888799990099888888879999009888888887999900000000000000000000000000000000000000000000000000000000000000000
+00999229777200000098888877720000009888888770000000988888777200000000000000000000000000000000000000000000000000000000000000000000
+00002299777220000098882977722000009988887772000000988829777220000000000000000000000000000000000000000000000000000000000000000000
+00022999772000000000229977700000000028887772200000002299777000000000000000000000000000000000000000000000000000000000000000000000
+00000220002000000002222977200000000229997720000000022229772000000000000000000000000000000000000000000000000000000000000000000000
+00002200002000000000220000200000000022000020000000002200002000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 0101010101010101010101010101010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0101010101010101010101010101010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
