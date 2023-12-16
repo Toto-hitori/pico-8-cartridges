@@ -3,7 +3,7 @@ version 41
 __lua__
 function _init()
 	slide = 0
-	max_slides = 6
+	max_slides = 7
 	timer = 0
 	next_slide = false
 	anim ={
@@ -27,7 +27,7 @@ function _init()
 	debug = ""
 	init_transition()
 	init_slide_0()
-	//init_slide_celeste()
+	//init_slide_anime()
 end
 
 function _update()
@@ -92,7 +92,9 @@ end
 -->8
 --init
 function init_next_slide()
-	if(slide == 1)then
+	if(slide == 0)then
+		init_slide_0()
+	elseif(slide == 1)then
 		init_slide_1()
 	elseif slide == 2 then
 		init_slide_kity()
@@ -102,6 +104,8 @@ function init_next_slide()
 		init_slide_osu()
 	elseif slide == 5 then 
 		init_slide_celeste()
+	elseif slide == 6 then
+		init_slide_anime() 
 	else
 		init_slide_end()
 	end
@@ -135,11 +139,6 @@ function init_slide_1()
 end
 function init_slide_hk() 
 		text_pos = { x = 42,y = 47,dy = 42, col = 4 }
-		knight = {
-			spr1 = 42,
-			x = 40,
-			y = 40		
-		}
 		pal()
 		palt(0,false)
 		palt(13,true)
@@ -167,6 +166,17 @@ function init_slide_celeste()
 	palt(11,true)
 	txt.delay = 2
 	straw = {dy = 0, max_dy = 15,up = true}
+end
+function init_slide_anime() 
+	text_pos = { x = 42,y = 47,dy = 42, col = 4 }
+	anya = {
+		spr1 = 42,
+		x = 40,
+		y = 40		
+	}
+	pal()
+	palt(0,true)
+	txt.delay = 2
 end
 function init_slide_end()
 	txt.delay = 0
@@ -223,6 +233,8 @@ function update_current_slide()
 		update_slide_osu()
 	elseif slide == 5 then 
 		update_slide_celeste()
+	elseif slide == 6 then
+		update_slide_anime()
 	else
 		update_slide_end()
 	end
@@ -244,7 +256,6 @@ function update_slide_1()
 	end
 	upd_card()
 end
-
 function update_slide_hk()
 	if(next_slide) then
 		rec.col = 4
@@ -286,8 +297,25 @@ function update_slide_celeste()
 		straw.dy = lerp(straw.dy,0,0.03)
 	end
 end
+function update_slide_anime()
+	if(next_slide) then
+		transition.active = true
+		next_slide = false
+		rec.col = 0
+	end
+	if transition.ended then
+		go_next_slide()
+	end
+	anim_sprites(0.2)
+	upd_card()
+end
 function update_slide_end()
 	anim_sprites(0.2,4)
+	if(next_slide) then
+		rec.col = 4
+		slide = -1
+		go_next_slide()
+	end
 end
 function update_txt()
 	if(time() - txt.timer > txt.delay)then
@@ -335,7 +363,7 @@ end
 function shutdown_transition()
 	if time() - shutdown.timer > 0.2 then
 		transition.ended = true
-		shutdown_transition = false
+		shutdown.transition = false
 	end
 end
 function upd_text_move()
@@ -372,6 +400,8 @@ function draw_current_slide()
 		draw_slide_osu()
 	elseif slide == 5 then 
 		draw_slide_celeste()
+	elseif slide == 6 then
+		draw_slide_anime()
 	else
 		draw_slide_end()
 	end
@@ -383,6 +413,7 @@ function draw_slide_0()
 	draw_bands(110,84,-1)
 	draw_bands(-2,-4,1)
 	//numbers
+	spr(192,text_pos.x-16,text_pos.y-8,4,3.1)//Maus
 	spr(2,text_pos.x,text_pos.y,2,3)//20
 	spr(4,text_pos.x+14,text_pos.y,2,3)//0
 	spr(2,text_pos.x+4*7,text_pos.y,2,3)//x
@@ -424,7 +455,7 @@ function draw_slide_hk()
 	local scale = (card.w/card.max_w)
 	sspr(80+8*anim.spr1,16,8,16,x+10,y+10,card.w/3,card.h/1.5)//knight
 	sspr(72,16,8,8,x+12,y+6+wig_dx,card.w/3.3,card.h/3)//wig
-	sspr(64,16,8,16,x+50*scale,y+30*scale,card.w/6,card.h/3)//knight
+	sspr(64,16,8,16,x+50*scale,y+30*scale,card.w/6,card.h/3)//hornet
 	if(txt.show) then 
 		print(" veo que te gusta",29,text_pos.y+48,blues[ceil(txt.clr)])
 		print(" hollow knight...",30,text_pos.y+58,blues[ceil(txt.clr)])
@@ -480,6 +511,22 @@ function draw_slide_celeste()
 		print("omg jugaste celeste 2!",(128-22*4)/2,text_pos.y+48,blues[ceil(txt.clr)])
 		print("me encanta crear en pico8",(128-25*4)/2,text_pos.y+58,blues[ceil(txt.clr)])
 		print("y celeste es mi juego fav :)",(128-27*4)/2,text_pos.y+68,blues[ceil(txt.clr)])
+	end
+end
+function draw_slide_anime()
+	rectfill(0,0,128,128,7)
+	//wrapped
+	draw_card(8)
+	draw_polygons({8,12})
+	local x = (128-card.w)/2 + card.dx
+	local y = (128-card.h)/2 + card.dy +14
+	local scale = (card.w/card.max_w)
+	sspr(3*8,64+16,16,16,x+12,y+10,card.w/1.5,card.h/1.5)//anya
+	if(txt.show) then 
+		print("hice un excel (ayuda) con",14,text_pos.y+44,blues[ceil(txt.clr)])
+		print("nuestros gustos en anime:",16,text_pos.y+54,blues[ceil(txt.clr)])
+		print("los animes coinciden un 11%",12,text_pos.y+64,blues[ceil(txt.clr)])
+		print("y las notas en un 88.6%!  ",17,text_pos.y+74,blues[ceil(txt.clr)])
 	end
 end
 function draw_slide_end()
@@ -541,7 +588,7 @@ function draw_progress_bar()
 		local size = 128/(max_slides+1) - 5
 		local clr = 7
 		if(i == slide) then 
-			clr = 0
+			clr = 5
 		end
 		rectfill( 5*(i+1) +size*i,3,5*i +size*i+size,5,clr)
 	end
@@ -721,4 +768,35 @@ ddddd02210222ffffff22201220dddddb00004400440bbbbbbbb07700770abbbbbb00bbbb222222b
 000000000000000000000000eeee2299922eee20000000000000000000000000d000000222222222222222000000000dd2f2ff000000ffff0000000f00000000
 0000000000000000000000000eee26fff62ee220000000000000000000000000d00d000c162fffffffff2261c00d000ddd22fff0000ffffff000000f00000000
 00000000000000000000000000ee176f671e2200000000000000000000000000dddd61cc1772222222227771cc16dddddd02ffffffff2e2fffffffff00000000
-00000000000000000000000000000000000000000000176f67100000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddd00dddddddddd000000000000176f67100000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddd00dddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00ddd00ddddddddddddd0ddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000d000dd000dd00d00ddd0000dddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000d00000d00d00dd00000dddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000d00d00d00d00dd000dddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000d00000d00d00ddd0000dddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00d0d00d00000d00d00ddddd00dddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00ddd00d00d00d00000dd00000dddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00ddd00d00d00dd000ddd0000ddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+dddddddddddddddddddddddddddddddd000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
