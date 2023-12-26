@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 33
+version 41
 __lua__
 function _init()
 	x1 = {0,0,0}
@@ -14,10 +14,27 @@ function _init()
 	player = {10,0,-10}
 	ssize = 128
 	angle = 0.125
+	base_x = 64
+	base_y = 64
 end
 
 function _update()
-	
+	if(btn(⬆️)) then
+		base_y -= 1
+	elseif(btn(⬇️)) then
+		base_y += 1
+	end
+	if(btn(⬅️)) then
+		x1[1] += 1
+		x2[1] += 1
+		x5[1] += 1
+		x6[1] += 1
+	elseif btn(➡️) then
+		x1[1] -= 1
+		x2[1] -= 1
+		x5[1] -= 1
+		x6[1] -= 1
+	end
 end
 
 function _draw()
@@ -28,7 +45,9 @@ function _draw()
 		local angle1 = asin((positions[i][2]-player[2])/(positions[i][1]-player[1]))
 		//print(asin((positions[i][2]-player[2])/(positions[i][1]-player[1])))
 		local ps1  =dx1[1]*abs(player[3]-positions[i][3])/40/cos(angle1)
-		pset(ps1+64,player[2]-positions[i][2]+64,7)
+		pset(ps1+base_x,abs(player[2]-positions[i][2])+base_y,7)
+		print(i)
+		print(abs(player[2]-positions[i][2])+base_y)
 	end
 	//pset(x2[1]/x2[2]*128/ssize,80-x2[2],7)
 	//pset(x3[1]/x3[2]*128/ssize,80-x3[2],7)
